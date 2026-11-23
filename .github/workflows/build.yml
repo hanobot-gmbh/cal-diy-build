@@ -38,8 +38,15 @@ jobs:
           repository: calcom/cal.diy
           ref: ${{ inputs.ref }}
 
+      - name: "HANOBOT-Anpassung: Gast-Mails im Zeitformat des Gastgebers (24 Std.)"
+        run: |
+          f=packages/emails/src/templates/AttendeeScheduledEmail.tsx
+          grep -q 'timeFormat={props.attendee?.timeFormat}' "$f" || { echo "Stelle nicht gefunden – Cal hat den Code geändert, Anpassung prüfen"; exit 1; }
+          sed -i 's/timeFormat={props.attendee?.timeFormat}/timeFormat={props.attendee?.timeFormat ?? props.calEvent.organizer?.timeFormat}/' "$f"
+          grep -n 'timeFormat=' "$f"
+
       - id: v
-        run: echo "tag=$(date +%Y%m%d)-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+        run: echo "tag=$(date +%Y%m%d)-$(git rev-parse --short HEAD)-hb" >> "$GITHUB_OUTPUT"
 
       - uses: docker/login-action@v3
         with:
